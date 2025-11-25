@@ -12,6 +12,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.speedometer.app.ui.theme.AppMaterialTheme
+import java.util.Locale
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -51,15 +52,28 @@ fun SpeedometerApp(vm: SpeedViewModel = viewModel()) {
                 .fillMaxWidth()
                 .weight(1f)
         ) {
-            Box(
-                modifier = Modifier.fillMaxSize(),
-                contentAlignment = Alignment.Center
+            Column(
+                modifier = Modifier.fillMaxSize()
             ) {
                 Text(
-                    text = "${speed} m/h",
-                    fontSize = 54.sp,
-                    modifier = Modifier.padding(4.dp)
+                    text = "سيف النصر عيسى",
+                    fontSize = 20.sp,
+                    modifier = Modifier
+                        .padding(12.dp)
+                        .align(Alignment.Start)
                 )
+
+                Box(
+                    modifier = Modifier
+                        .fillMaxSize(),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Text(
+                        text = String.format(Locale.US, "%.1f m/h", speed),
+                        fontSize = 54.sp,
+                        modifier = Modifier.padding(4.dp)
+                    )
+                }
             }
         }
 
