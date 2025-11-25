@@ -1,32 +1,20 @@
 package com.speedometer.app
 
-import android.Manifest
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
-import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 
 class MainActivity : ComponentActivity() {
-    private val requestPermission = registerForActivityResult(
-        ActivityResultContracts.RequestMultiplePermissions()
-    ) {}
-
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-
-        requestPermission.launch(
-            arrayOf(
-                Manifest.permission.ACCESS_FINE_LOCATION,
-                Manifest.permission.ACCESS_COARSE_LOCATION
-            )
-        )
-
         setContent {
             SpeedometerApp()
         }
@@ -50,10 +38,14 @@ fun SpeedometerApp(vm: SpeedViewModel = viewModel()) {
                     .fillMaxWidth()
                     .weight(1f)
             ) {
-                Box(modifier = Modifier.fillMaxSize().padding(20.dp)) {
+                Box(
+                    modifier = Modifier.fillMaxSize(),
+                    contentAlignment = Alignment.Center
+                ) {
                     Text(
-                        text = "${speed} km/h",
-                        style = MaterialTheme.typography.headlineLarge
+                        text = "${speed} m/h",
+                        fontSize = 54.sp,
+                        modifier = Modifier.padding(12.dp)
                     )
                 }
             }
@@ -66,10 +58,14 @@ fun SpeedometerApp(vm: SpeedViewModel = viewModel()) {
                     containerColor = MaterialTheme.colorScheme.secondaryContainer
                 )
             ) {
-                Box(modifier = Modifier.fillMaxSize().padding(20.dp)) {
+                Box(
+                    modifier = Modifier.fillMaxSize(),
+                    contentAlignment = Alignment.Center
+                ) {
                     Text(
                         text = movement,
-                        style = MaterialTheme.typography.headlineLarge
+                        fontSize = 54.sp,
+                        modifier = Modifier.padding(12.dp)
                     )
                 }
             }

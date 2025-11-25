@@ -73,5 +73,5 @@ dependencies {
     implementation("com.google.android.material:material:1.9.0")
     implementation("androidx.lifecycle:lifecycle-runtime-ktx:2.10.0")
     implementation("androidx.lifecycle:lifecycle-viewmodel-compose:2.10.0")
-    implementation("com.google.android.gms:play-services-location:21.3.0")
+//    implementation("com.google.android.gms:play-services-location:21.3.0")
 }

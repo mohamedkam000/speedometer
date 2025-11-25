@@ -5,21 +5,13 @@ import android.hardware.Sensor
 import android.hardware.SensorEvent
 import android.hardware.SensorEventListener
 import android.hardware.SensorManager
-import android.location.Location
 import androidx.lifecycle.AndroidViewModel
-import com.google.android.gms.location.LocationServices
-import com.google.android.gms.location.LocationRequest
-import com.google.android.gms.location.LocationCallback
-import com.google.android.gms.location.LocationResult
-import com.google.android.gms.location.Priority
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
-import kotlin.math.abs
 import kotlin.math.sqrt
 
 class SpeedViewModel(app: Application) : AndroidViewModel(app), SensorEventListener {
 
-    private val fused = LocationServices.getFusedLocationProviderClient(app)
     private val sensorManager = app.getSystemService(SensorManager::class.java)
     private val accel = sensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER)
 
@@ -34,26 +26,8 @@ class SpeedViewModel(app: Application) : AndroidViewModel(app), SensorEventListe
     private val gravity = FloatArray(3)
     private val linear = FloatArray(3)
 
-    private val request = LocationRequest.Builder(
-        Priority.PRIORITY_HIGH_ACCURACY,
-        500
-    ).build()
-
-    private val callback = object : LocationCallback() {
-        override fun onLocationResult(result: LocationResult) {
-            val location: Location? = result.locations.lastOrNull()
-            if (location != null) {
-                val kmh = (location.speed * 3.6).toInt()
-                if (kmh > _speed.value) {
-                    _speed.value = kmh
-                }
-            }
-        }
-    }
-
     init {
         sensorManager.registerListener(this, accel, SensorManager.SENSOR_DELAY_GAME)
-        fused.requestLocationUpdates(request, callback, null)
     }
 
     override fun onSensorChanged(event: SensorEvent) {
@@ -83,13 +57,14 @@ class SpeedViewModel(app: Application) : AndroidViewModel(app), SensorEventListe
         lastTime = now
 
         if (velocity < 0f) velocity = 0f
-        val kmh = (velocity * 3.6f).toInt()
-        _speed.value = kmh
 
-        when {
-            kmh < 8 && magnitude > 0.3f -> _movement.value = "On Foot"
-            kmh >= 8 || magnitude < 0.2f -> _movement.value = "In Car"
-        }
+        val mps = velocity
+        val mph = (mps * 3600f).toInt()
+
+        _speed.value = mph
+
+        if (mps < 2f && magnitude > 0.3f) _movement.value = "On Foot"
+        else if (mps >= 2f || magnitude < 0.2f) _movement.value = "In Car"
     }
 
     override fun onAccuracyChanged(sensor: Sensor?, accuracy: Int) {}
