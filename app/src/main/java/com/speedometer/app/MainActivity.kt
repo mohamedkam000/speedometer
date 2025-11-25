@@ -45,7 +45,7 @@ fun SpeedometerApp(vm: SpeedViewModel = viewModel()) {
                     Text(
                         text = "${speed} m/h",
                         fontSize = 54.sp,
-                        modifier = Modifier.padding(12.dp)
+                        modifier = Modifier.padding(4.dp)
                     )
                 }
             }
