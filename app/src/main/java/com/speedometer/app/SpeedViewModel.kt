@@ -7,75 +7,43 @@ import android.hardware.SensorEventListener
 import android.hardware.SensorManager
 import androidx.lifecycle.AndroidViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
 import kotlin.math.sqrt
-import kotlin.math.exp
 
 class SpeedViewModel(app: Application) : AndroidViewModel(app), SensorEventListener {
-
     private val sensorManager = app.getSystemService(SensorManager::class.java)
-    private val accel = sensorManager.getDefaultSensor(Sensor.TYPE_LINEAR_ACCELERATION)
+    private val accelerometer = sensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER)
 
-    private val _speed = MutableStateFlow(0)
-    val speed: StateFlow<Int> = _speed
+    private val _speed = MutableStateFlow(0f)
+    val speed = _speed.asStateFlow()
 
-    private val _movement = MutableStateFlow("Unknown")
-    val movement: StateFlow<String> = _movement
+    private val _movement = MutableStateFlow("Idle")
+    val movement = _movement.asStateFlow()
 
-    private var lastTime = 0L
-    private val velocity = FloatArray(3)
-    private val bias = FloatArray(3)
-    private var biasCount = 0
-    private var stillTime = 0L
+    private var lastUpdate = 0L
+    private var smoothedAccel = 0f
 
     init {
-        sensorManager.registerListener(this, accel, SensorManager.SENSOR_DELAY_GAME)
+        sensorManager.registerListener(this, accelerometer, SensorManager.SENSOR_DELAY_NORMAL)
     }
 
     override fun onSensorChanged(event: SensorEvent) {
-        val ax = event.values[0] - bias[0]
-        val ay = event.values[1] - bias[1]
-        val az = event.values[2] - bias[2]
+        val now = System.currentTimeMillis()
+        if (now - lastUpdate < 150) return
+        lastUpdate = now
 
-        val magnitude = sqrt(ax*ax + ay*ay + az*az)
+        val ax = event.values[0]
+        val ay = event.values[1]
+        val az = event.values[2]
 
-        val now = event.timestamp
-        val dt = if (lastTime == 0L) 0f else (now - lastTime) / 1_000_000_000f
-        lastTime = now
-        if (dt <= 0f) return
+        val accel = sqrt(ax * ax + ay * ay + az * az) - 9.81f
 
-        if (magnitude < 0.1f) {
-            stillTime += (dt * 1000).toLong()
-            if (stillTime > 500) {
-                velocity[0] = 0f
-                velocity[1] = 0f
-                velocity[2] = 0f
-                bias[0] = bias[0] * 0.98f + event.values[0] * 0.02f
-                bias[1] = bias[1] * 0.98f + event.values[1] * 0.02f
-                bias[2] = bias[2] * 0.98f + event.values[2] * 0.02f
-                biasCount++
-                return
-            }
-        } else {
-            stillTime = 0
-        }
+        smoothedAccel = smoothedAccel * 0.85f + accel * 0.15f
 
-        velocity[0] += ax * dt
-        velocity[1] += ay * dt
-        velocity[2] += az * dt
+        val displayedSpeed = (smoothedAccel * 200).coerceAtLeast(0f)
+        _speed.value = displayedSpeed
 
-        val decay = exp(-0.4f * dt)
-        velocity[0] *= decay
-        velocity[1] *= decay
-        velocity[2] *= decay
-
-        val horizontal = sqrt(velocity[0]*velocity[0] + velocity[1]*velocity[1])
-        val mph = (horizontal * 3600f).toInt()
-
-        _speed.value = mph
-
-        if (mph < 1500 && magnitude > 0.4f) _movement.value = "On Foot"
-        else _movement.value = "In Car"
+        _movement.value = if (displayedSpeed < 1f) "Idle" else "Moving"
     }
 
     override fun onAccuracyChanged(sensor: Sensor?, accuracy: Int) {}

@@ -16,9 +16,20 @@ import com.speedometer.app.ui.theme.AppMaterialTheme
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        actionBar?.hide()
         setContent {
             AppMaterialTheme {
-                SpeedometerApp()
+                Surface(
+                    modifier = Modifier.fillMaxSize(),
+                    color = MaterialTheme.colorScheme.surfaceContainer
+                ) {
+                    Box(
+                        modifier = Modifier.fillMaxSize(),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        SpeedometerApp()
+                    }
+                }
             }
         }
     }
