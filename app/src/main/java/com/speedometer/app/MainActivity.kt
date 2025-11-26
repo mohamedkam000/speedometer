@@ -55,8 +55,10 @@ fun SpeedometerApp(vm: SpeedViewModel = viewModel()) {
             Column(
                 modifier = Modifier.fillMaxSize()
             ) {
+                Spacer (modifier = Modifier.height(32.dp))
+                
                 Text(
-                    text = "سيف النصر عيسى",
+                    text = "سيف النصر عيسى آدم موسى",
                     fontSize = 20.sp,
                     modifier = Modifier
                         .padding(12.dp)
